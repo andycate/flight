@@ -82,5 +82,5 @@ bool Comms::send_raw_packet(std::string raw_packet) {
 
 Comms::Comms(EventLoop *el) : el(el) {
   threads.addThread(Comms::start_recv_loop, this);
-  el->add_event_handler(this->handle, "send");
+  el->add_event_handler("send", this);
 }

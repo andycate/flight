@@ -75,4 +75,8 @@ SerialComms comms(&el, &Serial);
 void setup() { Serial.begin(57600); el.start_eloop(); }
 
 // since this thread doesn't do anything, always yield back to active threads
-void loop() { threads.yield(); }
+void loop() { 
+  el.emit("send", {2.0, 1});
+  threads.delay(1000);
+  threads.yield();
+}

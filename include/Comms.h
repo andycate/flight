@@ -17,7 +17,6 @@ class Comms : EventHandler {
     uint16_t checksum(uint8_t *data, int count); // Fletcher16 checksum
     bool validate_packet(std::string raw_packet);
     packet decode_raw_packet(std::string raw_packet);
-    void handle(std::vector<float> args);
   protected:
     std::string receive_raw_packet();
     bool send_raw_packet(std::string raw_packet);
@@ -25,4 +24,5 @@ class Comms : EventHandler {
     Comms(EventLoop *el);
     void recv_loop();
     static void start_recv_loop(Comms *c);
+    void handle(std::vector<float> args);
 };

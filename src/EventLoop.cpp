@@ -6,36 +6,56 @@ bool EventLoop::compare(event a, event b) {
 
 EventLoop::EventLoop() : pq(EventLoop::compare) {}
 
-bool EventLoop::emit(std::string e, std::vector<float> args) {
-  return true;
-}
-
-void EventLoop::add_event_handler(std::string e, void (EventHandler::*handler)(std::vector<float> args)) {
-
-}
-
-void EventLoop::enqueue(void (*func)(), uint32_t delay_ms) {
-  event e;
-  e.func = func;
-  e.when = millis() + delay_ms;
-  while(pq_lock.try_lock() == 0) {
+void EventLoop::emit(std::string e, std::vector<float> args) {
+  while(eh_lock.try_lock() == 0) threads.yield();
+  while(pq_lock.try_lock() == 0) threads.yield();
+  if(handlers.count(e) == 0) {
+    eh_lock.unlock();
+    pq_lock.unlock();
+    threads.yield();
+  } else {
+    for(EventHandler *eh : handlers.at(e)) {
+      enqueue_unsafe(eh, args, 0);
+    }
+    eh_lock.unlock();
+    pq_lock.unlock();
     threads.yield();
   }
+}
+
+void EventLoop::add_event_handler(std::string e, EventHandler *eh) {
+  while(eh_lock.try_lock() == 0) threads.yield();
+  if(handlers.count(e) == 0) {
+    // insert
+    handlers.insert({e, {eh}});
+  } else {
+    // modify
+    handlers.at(e).push_back(eh);
+  }
+  eh_lock.unlock();
+  threads.yield();
+}
+
+void EventLoop::enqueue_unsafe(EventHandler *eh, std::vector<float> args, uint32_t delay_ms) {
+  event e;
+  e.when = millis() + delay_ms;
+  e.args = args;
+  e.eh = eh;
   pq.push(e);
-  pq_lock.unlock();
   has_event = true;
+}
+
+void EventLoop::enqueue(EventHandler *eh, std::vector<float> args, uint32_t delay_ms) {
+  while(pq_lock.try_lock() == 0) threads.yield();
+  enqueue_unsafe(eh, args, delay_ms);
+  pq_lock.unlock();
   threads.yield();
 }
 
 void EventLoop::eloop() {
   while(1) {
-    while(!has_event) {
-      threads.yield();
-    }
-
-    while(pq_lock.try_lock() == 0) {
-      threads.yield();
-    }
+    while(!has_event) threads.yield();
+    while(pq_lock.try_lock() == 0) threads.yield();
     if(pq.isEmpty()) {
       has_event = false;
       pq_lock.unlock();
@@ -44,7 +64,7 @@ void EventLoop::eloop() {
         event next = pq.pop();
         pq_lock.unlock();
         // call function
-        next.func();
+        next.eh->handle(next.args);
       } else {
         pq_lock.unlock();
       }
