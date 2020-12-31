@@ -5,7 +5,7 @@
 #include <Arduino.h>
 #include <i2c_device.h>
 
-EventLoop el;
+// EventLoop el;
 
 // /* PACKET DEFINITIONS */
 // enum Telemetry {
@@ -66,17 +66,25 @@ EventLoop el;
 // Valve hps(el, gpio6, HPS);
 
 /* COMM DEFINITION */
-SerialComms comms(&el, &Serial);
+// SerialComms comms(&el, &Serial);
 
 /* default Arduino functions */
 
 // start event loop
 // TODO: figure out better way to initialize serial
-void setup() { Serial.begin(57600); el.start_eloop(); }
+void setup() {
+  EventLoop el;
+
+  SerialComms comms(&el, &Serial);
+
+  // start event loop
+  el.start_eloop();
+
+  while(1) {
+    threads.delay(1000);
+    el.emit("send", {2.0, 3.0, 1});
+  }
+}
 
 // since this thread doesn't do anything, always yield back to active threads
-void loop() { 
-  el.emit("send", {2.0, 1});
-  threads.delay(1000);
-  threads.yield();
-}
+void loop() {}

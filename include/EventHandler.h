@@ -4,5 +4,5 @@
 class EventHandler {
   public:
     EventHandler() {};
-    void handle(std::vector<float> args) {}
+    virtual void handle(std::vector<float> args) {}
 };

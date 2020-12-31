@@ -60,7 +60,7 @@ void Comms::handle(std::vector<float> args) {
   // send packet
   int id = args.back();
   args.pop_back();
-  std::string raw_packet = "" + id;
+  std::string raw_packet = "" + std::string(((String)id).c_str());
   for(float e : args) {
     raw_packet += "," + std::string(((String)e).c_str());
   }
@@ -80,7 +80,9 @@ bool Comms::send_raw_packet(std::string raw_packet) {
   return true;
 }
 
-Comms::Comms(EventLoop *el) : el(el) {
+void Comms::init() {
   threads.addThread(Comms::start_recv_loop, this);
   el->add_event_handler("send", this);
 }
+
+Comms::Comms(EventLoop *el) : el(el) {}

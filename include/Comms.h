@@ -18,8 +18,9 @@ class Comms : EventHandler {
     bool validate_packet(std::string raw_packet);
     packet decode_raw_packet(std::string raw_packet);
   protected:
-    std::string receive_raw_packet();
-    bool send_raw_packet(std::string raw_packet);
+    virtual std::string receive_raw_packet();
+    virtual bool send_raw_packet(std::string raw_packet);
+    void init(); // should be called in constructor of child after child init
   public:
     Comms(EventLoop *el);
     void recv_loop();
