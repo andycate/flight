@@ -8,7 +8,6 @@ class ADS1219Sensor : public Sensor {
   private:
     I2CMaster *bus;
     I2CDevice device;
-    uint8_t address;
     DigitalInterface *drdy;
   public:
     static const uint8_t GAIN_MASK = 0xEF;

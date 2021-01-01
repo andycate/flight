@@ -17,13 +17,13 @@ class EventLoop {
       EventHandler eh;
 
       bool operator >(const Event& a) const {
-        return a.when > when;
+        return when > a.when;
       }
       bool operator <(const Event& a) const {
-        return a.when < when;
+        return when < a.when;
       }
       bool operator ==(const Event& a) const {
-        return a.when == when;
+        return when == a.when;
       }
     };
     std::priority_queue<Event, std::vector<Event>, std::greater<Event>> pq;

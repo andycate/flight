@@ -5,14 +5,12 @@
 #include "GPInput.h"
 #include "ADS1219Sensor.h"
 #include "INA226Sensor.h"
+#include "Measurement.h"
 
 #include <Arduino.h>
 #include <i2c_device.h>
 
 int main(int argc, char**argv) {
-  delay(2000);
-  Serial.println("Start");
-
   EventLoop el;
 
   // /* PACKET DEFINITIONS */
@@ -49,12 +47,11 @@ int main(int argc, char**argv) {
   GPInput gpio29(29, true);
   I2CMaster &i2c0 = Master;
   i2c0.begin(400 * 1000U);
-  Serial.println("after");
 
   // /* HARDWARE DEFINITIONS */
   // ADS1219Sensor adc0(&i2c0, 0x4A, &gpio29);
   // ADS1219Sensor adc1(&i2c0, 0x48, &gpio28);
-  // INA226Sensor pwr0(&i2c0, 0x40, &gpio23);
+  INA226Sensor pwr0(&i2c0, 0x40, &gpio23, 0.002, 4.0, true);
 
   // /* SUBSYSTEM DEFINITIONS */
   // Measurement lox_tank(el, adc0, 0, LOX_TANK); // event loop, device, channel, packet id
@@ -63,9 +60,9 @@ int main(int argc, char**argv) {
   // Measurement prop_inj(el, adc0, 3, LOX_INJ);
   // Measurement nitrogen(el, adc1, 0, NITROGEN);
 
-  // Measurement voltage(el, pwr0, 0, VOLTAGE);
-  // Measurement current(el, pwr0, 1, CURRENT);
-  // Measurement wattage(el, pwr0, 2, WATTAGE);
+  Measurement voltage(&el, &pwr0, 0, VOLTAGE, 10);
+  Measurement current(&el, &pwr0, 1, CURRENT, 10);
+  Measurement wattage(&el, &pwr0, 2, WATTAGE, 10);
 
   Valve lox_tway(&el, &gpio0, 0, LOX_TWAY);
   Valve prop_tway(&el, &gpio1, 0, PROP_TWAY);

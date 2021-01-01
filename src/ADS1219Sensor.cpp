@@ -1,7 +1,7 @@
 #include "ADS1219Sensor.h"
 
 ADS1219Sensor::ADS1219Sensor(I2CMaster *bus, uint8_t address, DigitalInterface *drdy)
-  : bus(bus), device(*bus, address, _BIG_ENDIAN), address(address), drdy(drdy)
+  : bus(bus), device(*bus, address, _BIG_ENDIAN), drdy(drdy)
 {
 }
 
