@@ -26,6 +26,10 @@ void EventLoop::add_event_handler(std::string e, EventHandler *eh) {
   }
 }
 
+void EventLoop::add_looper(std::function<void()> func) {
+  loopers.push_back(func);
+}
+
 void EventLoop::enqueue(EventHandler *eh, std::vector<float> args, uint32_t delay_ms) {
   event e;
   e.when = millis() + delay_ms;
@@ -36,9 +40,7 @@ void EventLoop::enqueue(EventHandler *eh, std::vector<float> args, uint32_t dela
 
 void EventLoop::eloop() {
   while(1) {
-    if(pq.isEmpty()) {
-      return;
-    } else {
+    if(!pq.isEmpty()) {
       if(pq.peek().when <= millis()) {
         event next = pq.pop();
         // call function
@@ -46,6 +48,9 @@ void EventLoop::eloop() {
       } else {
         return;
       }
+    }
+    for(std::function<void()> func : loopers) {
+      func();
     }
   }
 }

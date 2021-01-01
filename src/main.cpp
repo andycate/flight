@@ -72,7 +72,6 @@ int main(int argc, char**argv) {
 
   while(1) {
     el.eloop();
-    comms.rloop();
     yield(); // does this need to be here?
   }
   return 0;

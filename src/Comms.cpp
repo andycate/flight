@@ -68,4 +68,5 @@ void Comms::handle(std::vector<float> args) {
 
 Comms::Comms(EventLoop *el) : el(el) {
   el->add_event_handler("send", this);
+  el->add_looper(std::bind(&Comms::rloop, this));
 }
