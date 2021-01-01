@@ -1,10 +1,6 @@
 #include "EventLoop.h"
 
-bool EventLoop::compare(event a, event b) {
-  return a.when < b.when;
-}
-
-EventLoop::EventLoop() : pq(EventLoop::compare) {}
+EventLoop::EventLoop() {}
 
 void EventLoop::emit(std::string e, void *arg) {
   if(handlers.count(e) != 0) {
@@ -29,7 +25,7 @@ void EventLoop::add_looper(Looper func) {
 }
 
 void EventLoop::enqueue(EventHandler eh, void *arg, uint32_t delay_ms) {
-  event e;
+  Event e;
   e.when = millis() + delay_ms;
   e.arg = arg;
   e.eh = eh;
@@ -38,9 +34,10 @@ void EventLoop::enqueue(EventHandler eh, void *arg, uint32_t delay_ms) {
 
 void EventLoop::eloop() {
   while(1) {
-    if(!pq.isEmpty()) {
-      if(pq.peek().when <= millis()) {
-        event next = pq.pop();
+    if(!pq.empty()) {
+      if(pq.top().when <= millis()) {
+        Event next = pq.top();
+        pq.pop();
         // call function
         next.eh(next.arg);
       } else {

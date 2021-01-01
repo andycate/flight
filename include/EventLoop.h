@@ -4,18 +4,28 @@
 #include <unordered_map>
 #include <vector>
 #include <functional>
+#include <queue>
 
 typedef std::function<void(void*)> EventHandler;
 typedef std::function<void()> Looper;
 class EventLoop {
   private:
-    struct event {
+    struct Event {
       uint32_t when;
       void *arg;
       EventHandler eh;
+
+      bool operator >(const Event& a) const {
+        return a.when > when;
+      }
+      bool operator <(const Event& a) const {
+        return a.when < when;
+      }
+      bool operator ==(const Event& a) const {
+        return a.when == when;
+      }
     };
-    static bool compare(event a, event b);
-    PriorityQueue<event> pq;
+    std::priority_queue<Event, std::vector<Event>, std::greater<Event>> pq;
     std::unordered_map<std::string,std::vector<EventHandler>> handlers;
     std::vector<Looper> loopers;
   public:
