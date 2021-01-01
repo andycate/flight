@@ -1,5 +1,4 @@
 #pragma once
-#include "TeensyThreads.h"
 #include "EventLoop.h"
 #include "EventHandler.h"
 
@@ -18,12 +17,11 @@ class Comms : EventHandler {
     bool validate_packet(std::string raw_packet);
     packet decode_raw_packet(std::string raw_packet);
   protected:
-    virtual std::string receive_raw_packet();
-    virtual bool send_raw_packet(std::string raw_packet);
-    void init(); // should be called in constructor of child after child init
+    virtual bool packet_available() = 0;
+    virtual std::string receive_raw_packet() = 0;
+    virtual bool send_raw_packet(std::string raw_packet) = 0;
   public:
     Comms(EventLoop *el);
-    void recv_loop();
-    static void start_recv_loop(Comms *c);
+    void rloop(); // checks if there are pending messages at the end of each loop
     void handle(std::vector<float> args);
 };

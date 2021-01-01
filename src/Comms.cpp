@@ -41,19 +41,15 @@ Comms::packet Comms::decode_raw_packet(std::string raw_packet) {
   return p;
 }
 
-void Comms::start_recv_loop(Comms *c) {
-  c->recv_loop();
-}
-
-void Comms::recv_loop() {
-  while(1) {
-    std::string raw_packet = receive_raw_packet();
-    if(!validate_packet(raw_packet)) continue; // corrupt packet check
-    packet decoded = decode_raw_packet(raw_packet);
-    // TODO: figure out a better way of indexing events
-    el->emit("recv"+decoded.id, decoded.values);
-    threads.yield();
-  }
+void Comms::rloop() {
+  if(!packet_available()) return;
+  Serial.println("here");
+  std::string raw_packet = receive_raw_packet();
+  if(!validate_packet(raw_packet)) return; // corrupt packet check
+  packet decoded = decode_raw_packet(raw_packet);
+  // TODO: figure out a better way of indexing events
+  Serial.println("recv"+decoded.id);
+  el->emit("recv"+decoded.id, decoded.values);
 }
 
 void Comms::handle(std::vector<float> args) {
@@ -72,17 +68,6 @@ void Comms::handle(std::vector<float> args) {
   send_raw_packet(raw_packet);
 }
 
-std::string Comms::receive_raw_packet() {
-  return "";
-}
-
-bool Comms::send_raw_packet(std::string raw_packet) {
-  return true;
-}
-
-void Comms::init() {
-  threads.addThread(Comms::start_recv_loop, this);
+Comms::Comms(EventLoop *el) : el(el) {
   el->add_event_handler("send", this);
 }
-
-Comms::Comms(EventLoop *el) : el(el) {}

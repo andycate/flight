@@ -1,11 +1,12 @@
-#include "TeensyThreads.h"
 #include "EventLoop.h"
-#include "SerialComms.h"
+#include "USBSerialComms.h"
+#include "Valve.h"
+#include "GPIOutput.h"
 
 #include <Arduino.h>
 #include <i2c_device.h>
 
-int main(char**argv, int argc) {
+int main(int argc, char**argv) {
   EventLoop el;
 
   // /* PACKET DEFINITIONS */
@@ -29,7 +30,7 @@ int main(char**argv, int argc) {
   };
 
   // /* INTERFACE DEFINITIONS */
-  // GPIOutput gpio0(0);
+  GPIOutput gpio0(0);
   // GPIOutput gpio1(1);
   // GPIOutput gpio2(2);
   // GPIOutput gpio3(3);
@@ -58,7 +59,7 @@ int main(char**argv, int argc) {
   // Measurement current(el, pwr0, 1, CURRENT);
   // Measurement wattage(el, pwr0, 2, WATTAGE);
 
-  // Valve lox_tway(el, gpio0, LOX_TWAY);
+  Valve lox_tway(&el, &gpio0, 0, LOX_TWAY);
   // Valve prop_tway(el, gpio1, PROP_TWAY);
   // Valve lox_fway(el, gpio2, LOX_FWAY);
   // Valve prop_fway(el, gpio3, PROP_FWAY);
@@ -67,13 +68,11 @@ int main(char**argv, int argc) {
   // Valve hps(el, gpio6, HPS);
 
   /* COMM DEFINITION */
-  SerialComms comms(&el, &Serial);
+  USBSerialComms comms(&el, &Serial, 57600);
 
-  el.start_eloop();
   while(1) {
-    el.emit("send", {2.0, 1});
-    threads.delay(1000);
-    threads.yield();
+    el.eloop();
+    comms.rloop();
     yield(); // does this need to be here?
   }
   return 0;
