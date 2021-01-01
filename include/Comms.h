@@ -22,5 +22,5 @@ class Comms {
   public:
     Comms(EventLoop *el);
     void rloop(); // checks if there are pending messages at the end of each loop
-    void send(void *arg);
+    void send(std::vector<float> arg);
 };

@@ -2,7 +2,7 @@
 
 EventLoop::EventLoop() {}
 
-void EventLoop::emit(std::string e, void *arg) {
+void EventLoop::emit(std::string e, EventArg arg) {
   if(handlers.count(e) != 0) {
     for(EventHandler eh : handlers.at(e)) {
       enqueue(eh, arg, 0);
@@ -24,7 +24,7 @@ void EventLoop::add_looper(Looper func) {
   loopers.push_back(func);
 }
 
-void EventLoop::enqueue(EventHandler eh, void *arg, uint32_t delay_ms) {
+void EventLoop::enqueue(EventHandler eh, EventArg arg, uint32_t delay_ms) {
   Event e;
   e.when = millis() + delay_ms;
   e.arg = arg;

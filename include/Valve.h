@@ -12,7 +12,7 @@ class Valve {
     int id;
   public:
     Valve(EventLoop *el, DigitalInterface *di, uint8_t channel, int id);
-    void handle(void *arg);
+    void handle(std::vector<float> arg);
     bool open();
     bool close();
 };

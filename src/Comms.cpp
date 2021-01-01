@@ -47,16 +47,15 @@ void Comms::rloop() {
   if(!validate_packet(raw_packet)) return; // corrupt packet check
   packet decoded = decode_raw_packet(raw_packet);
   // TODO: figure out a better way of indexing events
-  el->emit("recv"+decoded.id, &(decoded.values));
+  el->emit("recv"+decoded.id, decoded.values);
 }
 
-void Comms::send(void *arg) {
+void Comms::send(std::vector<float> arg) {
   // send packet
-  std::vector<float> args = *(std::vector<float> *) arg;
-  int id = args.back();
-  args.pop_back();
+  int id = arg.back();
+  arg.pop_back();
   std::string raw_packet = "" + std::string(((String)id).c_str());
-  for(float e : args) {
+  for(float e : arg) {
     raw_packet += "," + std::string(((String)e).c_str());
   }
   uint16_t raw_checksum = checksum((uint8_t *)raw_packet.c_str(), raw_packet.length());
