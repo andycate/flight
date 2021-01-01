@@ -1,11 +1,10 @@
 #pragma once
 #include "EventLoop.h"
-#include "EventHandler.h"
 
 #include <string>
 #include <vector>
 
-class Comms : EventHandler {
+class Comms {
   private:
     struct packet {
       int id;
@@ -23,5 +22,5 @@ class Comms : EventHandler {
   public:
     Comms(EventLoop *el);
     void rloop(); // checks if there are pending messages at the end of each loop
-    void handle(std::vector<float> args);
+    void send(void *arg);
 };

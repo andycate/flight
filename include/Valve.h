@@ -1,11 +1,10 @@
 #pragma once
 #include "EventLoop.h"
-#include "EventHandler.h"
 #include "DigitalInterface.h"
 
 #include <vector>
 
-class Valve : EventHandler {
+class Valve {
   private:
     EventLoop *el;
     DigitalInterface *di;
@@ -13,7 +12,7 @@ class Valve : EventHandler {
     int id;
   public:
     Valve(EventLoop *el, DigitalInterface *di, uint8_t channel, int id);
-    void handle(std::vector<float> args) override;
+    void handle(void *arg);
     bool open();
     bool close();
 };

@@ -47,11 +47,12 @@ void Comms::rloop() {
   if(!validate_packet(raw_packet)) return; // corrupt packet check
   packet decoded = decode_raw_packet(raw_packet);
   // TODO: figure out a better way of indexing events
-  el->emit("recv"+decoded.id, decoded.values);
+  el->emit("recv"+decoded.id, &(decoded.values));
 }
 
-void Comms::handle(std::vector<float> args) {
+void Comms::send(void *arg) {
   // send packet
+  std::vector<float> args = *(std::vector<float> *) arg;
   int id = args.back();
   args.pop_back();
   std::string raw_packet = "" + std::string(((String)id).c_str());
@@ -67,6 +68,6 @@ void Comms::handle(std::vector<float> args) {
 }
 
 Comms::Comms(EventLoop *el) : el(el) {
-  el->add_event_handler("send", this);
+  el->add_event_handler("send", std::bind(&Comms::send, this, std::placeholders::_1));
   el->add_looper(std::bind(&Comms::rloop, this));
 }

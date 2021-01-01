@@ -6,17 +6,15 @@ bool EventLoop::compare(event a, event b) {
 
 EventLoop::EventLoop() : pq(EventLoop::compare) {}
 
-void EventLoop::emit(std::string e, std::vector<float> args) {
-  if(handlers.count(e) == 0) {
-    return;
-  } else {
-    for(EventHandler *eh : handlers.at(e)) {
-      enqueue(eh, args, 0);
+void EventLoop::emit(std::string e, void *arg) {
+  if(handlers.count(e) != 0) {
+    for(EventHandler eh : handlers.at(e)) {
+      enqueue(eh, arg, 0);
     }
   }
 }
 
-void EventLoop::add_event_handler(std::string e, EventHandler *eh) {
+void EventLoop::add_event_handler(std::string e, EventHandler eh) {
   if(handlers.count(e) == 0) {
     // insert
     handlers.insert({e, {eh}});
@@ -26,14 +24,14 @@ void EventLoop::add_event_handler(std::string e, EventHandler *eh) {
   }
 }
 
-void EventLoop::add_looper(std::function<void()> func) {
+void EventLoop::add_looper(Looper func) {
   loopers.push_back(func);
 }
 
-void EventLoop::enqueue(EventHandler *eh, std::vector<float> args, uint32_t delay_ms) {
+void EventLoop::enqueue(EventHandler eh, void *arg, uint32_t delay_ms) {
   event e;
   e.when = millis() + delay_ms;
-  e.args = args;
+  e.arg = arg;
   e.eh = eh;
   pq.push(e);
 }
@@ -44,12 +42,12 @@ void EventLoop::eloop() {
       if(pq.peek().when <= millis()) {
         event next = pq.pop();
         // call function
-        next.eh->handle(next.args);
+        next.eh(next.arg);
       } else {
         return;
       }
     }
-    for(std::function<void()> func : loopers) {
+    for(Looper func : loopers) {
       func();
     }
   }
