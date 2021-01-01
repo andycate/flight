@@ -2,6 +2,9 @@
 #include "USBSerialComms.h"
 #include "Valve.h"
 #include "GPIOutput.h"
+#include "GPInput.h"
+#include "ADS1219Sensor.h"
+#include "INA226Sensor.h"
 
 #include <Arduino.h>
 #include <i2c_device.h>
@@ -38,15 +41,16 @@ int main(int argc, char**argv) {
   GPIOutput gpio5(5);
   GPIOutput gpio6(6);
   GPIOutput gpio7(7);
-  // GPInput gpio10(10);
-  // GPInput gpio11(11);
-  // GPInput gpio23(23);
-  // I2CMaster& i2c0 = Master;
+  GPInput gpio23(23, true);
+  GPInput gpio28(28, true);
+  GPInput gpio29(29, true);
+  I2CMaster &i2c0 = Master;
+  i2c0.begin(400 * 1000U);
 
   // /* HARDWARE DEFINITIONS */
-  // ADS1219Sensor adc0(i2c0, gpio10);
-  // ADS1219Sensor adc1(i2c0, gpio11);
-  // INA226 pwr0(i2c0, gpio23);
+  ADS1219Sensor adc0(&i2c0, 0x4A, &gpio29);
+  ADS1219Sensor adc1(&i2c0, 0x48, &gpio28);
+  INA226Sensor pwr0(&i2c0, 0x40, &gpio23);
 
   // /* SUBSYSTEM DEFINITIONS */
   // Measurement lox_tank(el, adc0, 0, LOX_TANK); // event loop, device, channel, packet id
