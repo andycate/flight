@@ -18,9 +18,9 @@ bool Comms::validate_packet(std::string raw_packet) {
   size_t pipe_position = raw_packet.find("|");
   size_t len = raw_packet.length();
   if(pipe_position == std::string::npos) return false;
-  raw_packet.substr(1, pipe_position-1);
+  std::string data = raw_packet.substr(1, pipe_position-1);
   uint16_t recv_checksum = strtol(raw_packet.substr(pipe_position+1, len - pipe_position -2).c_str(), NULL, 16);
-  return checksum((uint8_t *)raw_packet.c_str(), raw_packet.length()) == recv_checksum;
+  return checksum((uint8_t *)data.c_str(), data.length()) == recv_checksum;
 }
 
 Comms::packet Comms::decode_raw_packet(std::string raw_packet) {
@@ -43,12 +43,10 @@ Comms::packet Comms::decode_raw_packet(std::string raw_packet) {
 
 void Comms::rloop() {
   if(!packet_available()) return;
-  Serial.println("here");
   std::string raw_packet = receive_raw_packet();
   if(!validate_packet(raw_packet)) return; // corrupt packet check
   packet decoded = decode_raw_packet(raw_packet);
   // TODO: figure out a better way of indexing events
-  Serial.println("recv"+decoded.id);
   el->emit("recv"+decoded.id, decoded.values);
 }
 

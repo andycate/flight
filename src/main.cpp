@@ -31,13 +31,13 @@ int main(int argc, char**argv) {
 
   // /* INTERFACE DEFINITIONS */
   GPIOutput gpio0(0);
-  // GPIOutput gpio1(1);
-  // GPIOutput gpio2(2);
-  // GPIOutput gpio3(3);
-  // GPIOutput gpio4(4);
-  // GPIOutput gpio5(5);
-  // GPIOutput gpio6(6);
-  // GPIOutput gpio7(7);
+  GPIOutput gpio1(1);
+  GPIOutput gpio2(2);
+  GPIOutput gpio3(3);
+  GPIOutput gpio4(4);
+  GPIOutput gpio5(5);
+  GPIOutput gpio6(6);
+  GPIOutput gpio7(7);
   // GPInput gpio10(10);
   // GPInput gpio11(11);
   // GPInput gpio23(23);
@@ -60,12 +60,12 @@ int main(int argc, char**argv) {
   // Measurement wattage(el, pwr0, 2, WATTAGE);
 
   Valve lox_tway(&el, &gpio0, 0, LOX_TWAY);
-  // Valve prop_tway(el, gpio1, PROP_TWAY);
-  // Valve lox_fway(el, gpio2, LOX_FWAY);
-  // Valve prop_fway(el, gpio3, PROP_FWAY);
-  // Valve lox_gems(el, gpio4, LOX_GEMS);
-  // Valve prop_gems(el, gpio5, PROP_GEMS);
-  // Valve hps(el, gpio6, HPS);
+  Valve prop_tway(&el, &gpio1, 0, PROP_TWAY);
+  Valve lox_fway(&el, &gpio2, 0, LOX_FWAY);
+  Valve prop_fway(&el, &gpio3, 0, PROP_FWAY);
+  Valve lox_gems(&el, &gpio4, 0, LOX_GEMS);
+  Valve prop_gems(&el, &gpio5, 0, PROP_GEMS);
+  Valve hps(&el, &gpio6, 0, HPS);
 
   /* COMM DEFINITION */
   USBSerialComms comms(&el, &Serial, 57600);
