@@ -10,6 +10,9 @@
 #include <i2c_device.h>
 
 int main(int argc, char**argv) {
+  delay(2000);
+  Serial.println("Start");
+
   EventLoop el;
 
   // /* PACKET DEFINITIONS */
@@ -46,11 +49,12 @@ int main(int argc, char**argv) {
   GPInput gpio29(29, true);
   I2CMaster &i2c0 = Master;
   i2c0.begin(400 * 1000U);
+  Serial.println("after");
 
   // /* HARDWARE DEFINITIONS */
-  ADS1219Sensor adc0(&i2c0, 0x4A, &gpio29);
-  ADS1219Sensor adc1(&i2c0, 0x48, &gpio28);
-  INA226Sensor pwr0(&i2c0, 0x40, &gpio23);
+  // ADS1219Sensor adc0(&i2c0, 0x4A, &gpio29);
+  // ADS1219Sensor adc1(&i2c0, 0x48, &gpio28);
+  // INA226Sensor pwr0(&i2c0, 0x40, &gpio23);
 
   // /* SUBSYSTEM DEFINITIONS */
   // Measurement lox_tank(el, adc0, 0, LOX_TANK); // event loop, device, channel, packet id

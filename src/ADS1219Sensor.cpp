@@ -28,10 +28,10 @@ float ADS1219Sensor::read(uint8_t channel) {
       return 0.0;
   }
   device.write(0x40, &config, 1, false);
-  device.write(0x08, nullptr, 0, false);
+  device.write(0x08, nullptr, 0, true);
   while(drdy->get_input(0) == 1); // wait for response
   uint8_t *buffer;
-  device.read(0x10, buffer, 3, false);
+  device.read(0x10, buffer, 3, true);
   long data32 = buffer[0];
   data32 <<= 8;
   data32 |= buffer[1];
