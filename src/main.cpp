@@ -11,10 +11,6 @@
 #include <i2c_device.h>
 
 int main(int argc, char**argv) {
-  Serial.begin(57600);
-  delay(1000);
-  Serial.println("hello world");
-
   EventLoop el;
 
   // /* PACKET DEFINITIONS */
