@@ -1,67 +1,85 @@
 #include "EventLoop.h"
 
-uint32_t FreeRam(){ // for Teensy 3.0
-  uint32_t stackTop;
-  uint32_t heapTop;
-
-  // current position of the stack.
-  stackTop = (uint32_t) &stackTop;
-
-  // current position of heap.
-  void* hTop = malloc(1);
-  heapTop = (uint32_t) hTop;
-  free(hTop);
-
-  // The difference is the free, available ram.
-  return stackTop - heapTop;
+EventLoop::EventLoop() {
+  emit_f = bind(&EventLoop::emit, this, placeholders::_1, placeholders::_2);
+  send_f = bind(&EventLoop::send, this, placeholders::_1, placeholders::_2);
+  emit_packet_f = bind(&EventLoop::emit_packet, this, placeholders::_1, placeholders::_2);
 }
 
-EventLoop::EventLoop() {}
-
-void EventLoop::emit(std::string e, EventArg arg) {
-  if(handlers.count(e) != 0) {
-    for(EventHandler eh : handlers.at(e)) {
-      enqueue(eh, arg, 0);
+void EventLoop::register_subsystem(Subsystem *s, vector<string> events, vector<int> packets, uint8_t rate) {
+  // add subsystem to appropriate packet handlers
+  for(int p : packets) {
+    if(packet_handlers.count(p) == 0) {
+      packet_handlers.insert({p, {s}});
+    } else {
+      packet_handlers.at(p).push_back(s);
     }
   }
-}
-
-void EventLoop::add_event_handler(std::string e, EventHandler eh) {
-  if(handlers.count(e) == 0) {
-    // insert
-    handlers.insert({e, {eh}});
-  } else {
-    // modify
-    handlers.at(e).push_back(eh);
+  // add subsystem to appropriate event handlers
+  for(string e : events) {
+    if(event_handlers.count(e) == 0) {
+      event_handlers.insert({e, {s}});
+    } else {
+      event_handlers.at(e).push_back(s);
+    }
+  }
+  // add subsystem task
+  if(rate > 0) {
+    Task t;
+    t.when = millis();
+    t.period = 1000 / rate;
+    t.s = s;
+    taskq.push(t);
   }
 }
 
-void EventLoop::add_looper(Looper func) {
-  loopers.push_back(func);
-}
-
-void EventLoop::enqueue(EventHandler eh, EventArg arg, uint32_t delay_ms) {
-  Event e;
-  e.when = millis() + delay_ms;
-  e.arg = arg;
-  e.eh = eh;
-  pq.push(e);
+void EventLoop::register_comms(Comms *c) {
+  comms.push_back(c);
 }
 
 void EventLoop::eloop() {
-  while(1) {
-    if(!pq.empty()) {
-      if(pq.top().when <= millis()) {
-        Event next = pq.top();
-        pq.pop();
-        // call function
-        next.eh(next.arg);
-      } else {
-        return;
-      }
+  if(!packetq.empty()) {
+    if(packetq.top().when <= millis()) {
+      Packet next = packetq.top();
+      packetq.pop();
+      next.s->handle_packet(next.id, next.args, emit_f, send_f);
     }
-    for(Looper func : loopers) {
-      func();
+  } else if(!eventq.empty()) {
+    if(eventq.top().when <= millis()) {
+      Event next = eventq.top();
+      eventq.pop();
+      next.s->handle_event(next.event, next.args, emit_f, send_f);
+    }
+  } else if(!taskq.empty()) {
+    if(taskq.top().when <= millis()) {
+      Task next = taskq.top();
+      taskq.pop();
+      next.s->loop(emit_f, send_f);
+    }
+  }
+  for(Comms *c : comms) {
+    c->loop(emit_f, emit_packet_f);
+  }
+}
+
+void EventLoop::emit(string event, vector<float> args) {
+  if(event_handlers.count(event) > 0) {
+    for(Subsystem *s : event_handlers.at(event)) {
+      eventq.push({.when = millis(), .event = event, .args = args, .s = s});
+    }
+  }
+}
+
+void EventLoop::send(int id, vector<float> args) {
+  for(Comms *c : comms) {
+    packetq.push({.when = millis(), .id = id, .args = args, .s = c});
+  }
+}
+
+void EventLoop::emit_packet(int id, vector<float> args) {
+  if(packet_handlers.count(id) > 0) {
+    for(Subsystem *s : packet_handlers.at(id)) {
+      packetq.push({.when = millis(), .id = id, .args = args, .s = s});
     }
   }
 }
