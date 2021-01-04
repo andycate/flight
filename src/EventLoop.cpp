@@ -6,7 +6,10 @@ EventLoop::EventLoop() {
   emit_packet_f = bind(&EventLoop::emit_packet, this, placeholders::_1, placeholders::_2);
 }
 
-void EventLoop::register_subsystem(Subsystem *s, vector<string> events, vector<int> packets, uint8_t rate) {
+void EventLoop::adds(Subsystem *s) {
+  vector<int> packets = s->packets;
+  vector<string> events = s->events;
+  uint8_t rate = s->rate;
   // add subsystem to appropriate packet handlers
   for(int p : packets) {
     if(packet_handlers.count(p) == 0) {
@@ -33,7 +36,7 @@ void EventLoop::register_subsystem(Subsystem *s, vector<string> events, vector<i
   }
 }
 
-void EventLoop::register_comms(Comms *c) {
+void EventLoop::addc(Comms *c) {
   comms.push_back(c);
 }
 

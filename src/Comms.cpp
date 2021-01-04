@@ -1,4 +1,4 @@
-#include "EventLoop.h"
+#include "comms/Comms.h"
 
 uint16_t Comms::checksum(uint8_t *data, int count) {
   uint16_t sum1 = 0;
@@ -65,6 +65,4 @@ void Comms::handle_packet(int id, vector<float> args, EmitterFunc emit, SenderFu
 
 void Comms::handle_event(string event, vector<float> args, EmitterFunc emit, SenderFunc send) {}
 
-Comms::Comms(EventLoop *el) : Subsystem() {
-  el->register_comms(this);
-}
+Comms::Comms() : Subsystem() {}

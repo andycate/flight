@@ -1,16 +1,16 @@
 #pragma once
+#include "comms/Comms.h"
+#include "subsystems/Subsystem.h"
 
 #include <Arduino.h>
 
 #include <unordered_map>
+#include <string>
 #include <vector>
 #include <functional>
 #include <queue>
 
 using namespace std;
-
-class Subsystem;
-class Comms;
 
 typedef function<void(string,vector<float>)> EmitterFunc;
 typedef function<void(int,vector<float>)> SenderFunc;
@@ -123,11 +123,8 @@ class EventLoop {
      * 
      * @param s A pointer to the subsystem to register. Should be called
      *          only from the constructor of the subsystem class.
-     * @param events A list of events that this subsystem responds to
-     * @param packets A list of packet ids that this subsystem responds to
-     * @param rate The update frequency of this subsystem
      */
-    void register_subsystem(Subsystem *s, vector<string> events, vector<int> packets, uint8_t rate);
+    void adds(Subsystem *s);
     /**
      * Register a comms subsystem.
      * 
@@ -140,7 +137,7 @@ class EventLoop {
      * 
      * @param c A pointer to the comms class instance
      */
-    void register_comms(Comms *c);
+    void addc(Comms *c);
     /**
      * Main event loop.
      * 
@@ -156,67 +153,4 @@ class EventLoop {
      */
     void eloop();
     EventLoop();
-};
-
-class Subsystem {
-  public:
-    Subsystem();
-    Subsystem(EventLoop *el, vector<string> events, vector<int> packets, uint8_t rate);
-    virtual void handle_packet(int id, vector<float> args, EmitterFunc emit, SenderFunc send) = 0;
-    virtual void handle_event(string event, vector<float> args, EmitterFunc emit, SenderFunc send) = 0;
-    virtual void loop(EmitterFunc emit, SenderFunc send) = 0;
-};
-
-class Comms : public Subsystem {
-  private:
-    struct packet {
-      int id;
-      vector<float> values;
-      uint16_t checksum;
-    };
-    uint16_t checksum(uint8_t *data, int count); // Fletcher16 checksum
-    bool validate_packet(string raw_packet);
-    packet decode_raw_packet(string raw_packet);
-  protected:
-    /**
-     * Check for available packet.
-     * 
-     * @return whether a packet is waiting to be received and processed.
-     */
-    virtual bool packet_available() = 0;
-    /**
-     * Receives raw packet.
-     * 
-     * @return raw packet in string form
-     */
-    virtual string receive_raw_packet() = 0;
-    /**
-     * Send raw packet.
-     * 
-     * @param raw_packet The raw packet to be sent
-     */
-    virtual bool send_raw_packet(string raw_packet) = 0;
-  public:
-    Comms(EventLoop *el);
-    /**
-     * Handle packet event.
-     * 
-     * This function is special for the Comms class, and sends the specified
-     * packet.
-     */
-    void handle_packet(int id, vector<float> args, EmitterFunc emit, SenderFunc send) override;
-    /**
-     * Handle registered events.
-     * 
-     * Should never be called for the comms class.
-     */
-    void handle_event(string event, vector<float> args, EmitterFunc emit, SenderFunc send) override;
-    /**
-     * Comms loop function.
-     * 
-     * Since the Comms class is special, this function gets called every
-     * cycle of the event loop. It checks for incoming packets, and if one
-     * is received, the send function is called.
-     */
-    void loop(EmitterFunc emit, SenderFunc send) override;
 };
