@@ -2,6 +2,7 @@
 #include "EventLoop.h"
 
 #include <string>
+#include <functional>
 #include <vector>
 
 class Comms {
@@ -21,6 +22,6 @@ class Comms {
     virtual bool send_raw_packet(std::string raw_packet) = 0;
   public:
     Comms(EventLoop *el);
-    void rloop(); // checks if there are pending messages at the end of each loop
-    void send(std::vector<float> arg);
+    void rloop(std::function<void(int,std::vector<float>)> cback); // checks if there are pending messages at the end of each loop
+    void send(int id, std::vector<float> args);
 };

@@ -41,21 +41,19 @@ Comms::packet Comms::decode_raw_packet(std::string raw_packet) {
   return p;
 }
 
-void Comms::rloop() {
+void Comms::rloop(std::function<void(int,std::vector<float>)> cback) {
   if(!packet_available()) return;
   std::string raw_packet = receive_raw_packet();
   if(!validate_packet(raw_packet)) return; // corrupt packet check
   packet decoded = decode_raw_packet(raw_packet);
   // TODO: figure out a better way of indexing events
-  el->emit("recv"+decoded.id, decoded.values);
+  cback(decoded.id, decoded.values);
 }
 
-void Comms::send(std::vector<float> arg) {
+void Comms::send(int id, std::vector<float> args) {
   // send packet
-  int id = arg.back();
-  arg.pop_back();
   std::string raw_packet = "" + std::string(((String)id).c_str());
-  for(float e : arg) {
+  for(float e : args) {
     raw_packet += "," + std::string(((String)e).c_str());
   }
   uint16_t raw_checksum = checksum((uint8_t *)raw_packet.c_str(), raw_packet.length());
@@ -67,6 +65,5 @@ void Comms::send(std::vector<float> arg) {
 }
 
 Comms::Comms(EventLoop *el) : el(el) {
-  el->add_event_handler("send", std::bind(&Comms::send, this, std::placeholders::_1));
-  el->add_looper(std::bind(&Comms::rloop, this));
+  el->register_comms(this);
 }
