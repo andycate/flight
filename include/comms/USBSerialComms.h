@@ -14,5 +14,11 @@ class USBSerialComms : public Comms {
     bool send_raw_packet(string raw_packet) override;
     bool packet_available() override;
   public:
+    /**
+     * Construct a USB Serial comms subsystem.
+     * 
+     * @param port The usb serial port to connect to
+     * @param baud the baud rate
+     */
     USBSerialComms(usb_serial_class *port, int baud);
 };

@@ -11,6 +11,10 @@
 #include <i2c_device.h>
 
 int main(int argc, char**argv) {
+  Serial.begin(57600);
+  delay(1000);
+  Serial.println("hello world");
+
   EventLoop el;
 
   // /* PACKET DEFINITIONS */
@@ -33,7 +37,7 @@ int main(int argc, char**argv) {
     HPS = 16,
   };
 
-  // /* INTERFACE DEFINITIONS */
+  /* INTERFACE DEFINITIONS */
   GPIOutput gpio0(0);
   GPIOutput gpio1(1);
   GPIOutput gpio2(2);
@@ -46,14 +50,14 @@ int main(int argc, char**argv) {
   GPInput gpio28(28, true);
   GPInput gpio29(29, true);
   I2CMaster &i2c0 = Master;
-  i2c0.begin(400 * 1000U);
+  i2c0.begin(400 * 1000U); // 400 kHz I2C bus. Change to 100 kHz or lower if using long wires
 
-  // /* HARDWARE DEFINITIONS */
-  ADS1219Sensor adc0(&i2c0, 0x4A, &gpio29);
-  ADS1219Sensor adc1(&i2c0, 0x48, &gpio28);
+  /* HARDWARE DEFINITIONS */
+  // ADS1219Sensor adc0(&i2c0, 0x4A, &gpio29);
+  // ADS1219Sensor adc1(&i2c0, 0x48, &gpio28);
   INA226Sensor pwr0(&i2c0, 0x40, &gpio23, 0.002, 4.0, true);
 
-  // /* SUBSYSTEM DEFINITIONS */
+  /* SUBSYSTEM DEFINITIONS */
   // Measurement lox_tank(el, adc0, 0, LOX_TANK); // event loop, device, channel, packet id
   // Measurement prop_tank(el, adc0, 1, PROP_TANK);
   // Measurement lox_inj(el, adc0, 2, LOX_INJ);
@@ -72,7 +76,8 @@ int main(int argc, char**argv) {
   Valve prop_gems(&gpio5, 0, PROP_GEMS); el.adds(&prop_gems);
   Valve hps(&gpio6, 0, HPS); el.adds(&hps);
 
-  /* COMM DEFINITION */
+  // COMM DEFINITION
+  
   USBSerialComms comms(&Serial, 57600); el.addc(&comms);
 
   while(1) {

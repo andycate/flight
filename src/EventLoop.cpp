@@ -57,6 +57,7 @@ void EventLoop::eloop() {
     if(taskq.top().when <= millis()) {
       Task next = taskq.top();
       taskq.pop();
+      taskq.push({.when = millis() + next.period, .period = next.period, .s = next.s});
       next.s->loop(emit_f, send_f);
     }
   }
