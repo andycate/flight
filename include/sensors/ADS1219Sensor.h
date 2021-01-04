@@ -1,6 +1,6 @@
 #pragma once
 #include "Sensor.h"
-#include "DigitalInterface.h"
+#include "interfaces/DigitalInterface.h"
 
 #include <i2c_device.h>
 

@@ -1,7 +1,10 @@
 #include "EventLoop.h"
 #include "comms/USBSerialComms.h"
+#include "interfaces/GPInput.h"
 #include "interfaces/GPIOutput.h"
+#include "sensors/ADS1219Sensor.h"
 #include "sensors/INA226Sensor.h"
+#include "subsystems/Measurement.h"
 #include "subsystems/Valve.h"
 
 #include <Arduino.h>
@@ -39,15 +42,15 @@ int main(int argc, char**argv) {
   GPIOutput gpio5(5);
   GPIOutput gpio6(6);
   GPIOutput gpio7(7);
-  // GPInput gpio23(23, true);
-  // GPInput gpio28(28, true);
-  // GPInput gpio29(29, true);
+  GPInput gpio23(23, true);
+  GPInput gpio28(28, true);
+  GPInput gpio29(29, true);
   I2CMaster &i2c0 = Master;
   i2c0.begin(400 * 1000U);
 
   // /* HARDWARE DEFINITIONS */
-  // ADS1219Sensor adc0(&i2c0, 0x4A, &gpio29);
-  // ADS1219Sensor adc1(&i2c0, 0x48, &gpio28);
+  ADS1219Sensor adc0(&i2c0, 0x4A, &gpio29);
+  ADS1219Sensor adc1(&i2c0, 0x48, &gpio28);
   INA226Sensor pwr0(&i2c0, 0x40, &gpio23, 0.002, 4.0, true);
 
   // /* SUBSYSTEM DEFINITIONS */
@@ -57,9 +60,9 @@ int main(int argc, char**argv) {
   // Measurement prop_inj(el, adc0, 3, LOX_INJ);
   // Measurement nitrogen(el, adc1, 0, NITROGEN);
 
-  // Measurement voltage(&el, &pwr0, 0, VOLTAGE, 10);
-  // Measurement current(&el, &pwr0, 1, CURRENT, 10);
-  // Measurement wattage(&el, &pwr0, 2, WATTAGE, 10);
+  Measurement voltage(&pwr0, 0, VOLTAGE, 5); el.adds(&voltage);
+  Measurement current(&pwr0, 1, CURRENT, 5); el.adds(&current);
+  Measurement wattage(&pwr0, 2, WATTAGE, 5); el.adds(&wattage);
 
   Valve lox_tway(&gpio0, 0, LOX_TWAY); el.adds(&lox_tway);
   Valve prop_tway(&gpio1, 0, PROP_TWAY); el.adds(&prop_tway);
