@@ -4,6 +4,8 @@ EventLoop::EventLoop() {
   emit_f = bind(&EventLoop::emit, this, placeholders::_1, placeholders::_2);
   send_f = bind(&EventLoop::send, this, placeholders::_1, placeholders::_2);
   emit_packet_f = bind(&EventLoop::emit_packet, this, placeholders::_1, placeholders::_2);
+
+  start_time = micros();
 }
 
 void EventLoop::adds(Subsystem *s) {
@@ -29,7 +31,7 @@ void EventLoop::adds(Subsystem *s) {
   // add subsystem task
   if(rate > 0) {
     Task t;
-    t.when = millis();
+    t.when = millis() - 1;
     t.period = 1000 / rate;
     t.s = s;
     taskq.push(t);
@@ -43,22 +45,34 @@ void EventLoop::addc(Comms *c) {
 void EventLoop::eloop() {
   if(!packetq.empty()) {
     if(packetq.top().when <= millis()) {
+      idle_time += micros() - start_time;
+      start_time = micros();
       Packet next = packetq.top();
       packetq.pop();
       next.s->handle_packet(next.id, next.args, emit_f, send_f);
+      run_time += micros() - start_time;
+      start_time = micros();
     }
   } else if(!eventq.empty()) {
     if(eventq.top().when <= millis()) {
+      idle_time += micros() - start_time;
+      start_time = micros();
       Event next = eventq.top();
       eventq.pop();
       next.s->handle_event(next.event, next.args, emit_f, send_f);
+      run_time += micros() - start_time;
+      start_time = micros();
     }
   } else if(!taskq.empty()) {
     if(taskq.top().when <= millis()) {
+      idle_time += micros() - start_time;
+      start_time = micros();
       Task next = taskq.top();
       taskq.pop();
       taskq.push({.when = millis() + next.period, .period = next.period, .s = next.s});
       next.s->loop(emit_f, send_f);
+      run_time += micros() - start_time;
+      start_time = micros();
     }
   }
   for(Comms *c : comms) {

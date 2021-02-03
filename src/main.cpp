@@ -4,8 +4,10 @@
 #include "interfaces/GPIOutput.h"
 #include "sensors/ADS1219Sensor.h"
 #include "sensors/INA226Sensor.h"
+#include "sensors/FakeSensor.h"
 #include "subsystems/Measurement.h"
 #include "subsystems/Valve.h"
+#include "subsystems/Usage.h"
 
 #include <Arduino.h>
 #include <i2c_device.h>
@@ -45,13 +47,14 @@ int main(int argc, char**argv) {
   GPInput gpio23(23, true);
   GPInput gpio28(28, true);
   GPInput gpio29(29, true);
-  I2CMaster &i2c0 = Master;
-  i2c0.begin(400 * 1000U); // 400 kHz I2C bus. Change to 100 kHz or lower if using long wires
+  // I2CMaster &i2c0 = Master;
+  // i2c0.begin(400 * 1000U); // 400 kHz I2C bus. Change to 100 kHz or lower if using long wires
 
   /* HARDWARE DEFINITIONS */
   // ADS1219Sensor adc0(&i2c0, 0x4A, &gpio29);
   // ADS1219Sensor adc1(&i2c0, 0x48, &gpio28);
-  INA226Sensor pwr0(&i2c0, 0x40, &gpio23, 0.002, 4.0, true);
+  // INA226Sensor pwr0(&i2c0, 0x40, &gpio23, 0.002, 4.0, true);
+  FakeSensor fake0(10000, 100.0);
 
   /* SUBSYSTEM DEFINITIONS */
   // Measurement lox_tank(el, adc0, 0, LOX_TANK); // event loop, device, channel, packet id
@@ -60,9 +63,20 @@ int main(int argc, char**argv) {
   // Measurement prop_inj(el, adc0, 3, LOX_INJ);
   // Measurement nitrogen(el, adc1, 0, NITROGEN);
 
-  Measurement voltage(&pwr0, 0, VOLTAGE, 5); el.adds(&voltage);
-  Measurement current(&pwr0, 1, CURRENT, 5); el.adds(&current);
-  Measurement wattage(&pwr0, 2, WATTAGE, 5); el.adds(&wattage);
+  // Measurement voltage(&pwr0, 0, VOLTAGE, 10); el.adds(&voltage);
+  // Measurement current(&pwr0, 1, CURRENT, 10); el.adds(&current);
+  // Measurement wattage(&pwr0, 2, WATTAGE, 10); el.adds(&wattage);
+
+  Measurement test1(&fake0, 0, LOX_TANK, 10); el.adds(&test1);
+  Measurement test2(&fake0, 255, PROP_TANK, 10); el.adds(&test2);
+  Measurement test3(&fake0, 0, LOX_INJ, 10); el.adds(&test3);
+  Measurement test4(&fake0, 255, PROP_INJ, 10); el.adds(&test4);
+  Measurement test5(&fake0, 0, NITROGEN, 10); el.adds(&test5);
+
+  Measurement test6(&fake0, 0, VOLTAGE, 10); el.adds(&test6);
+  Measurement test7(&fake0, 255, CURRENT, 10); el.adds(&test7);
+  Measurement test8(&fake0, 0, WATTAGE, 10); el.adds(&test8);
+
 
   Valve lox_tway(&gpio0, 0, LOX_TWAY); el.adds(&lox_tway);
   Valve prop_tway(&gpio1, 0, PROP_TWAY); el.adds(&prop_tway);
@@ -71,6 +85,8 @@ int main(int argc, char**argv) {
   Valve lox_gems(&gpio4, 0, LOX_GEMS); el.adds(&lox_gems);
   Valve prop_gems(&gpio5, 0, PROP_GEMS); el.adds(&prop_gems);
   Valve hps(&gpio6, 0, HPS); el.adds(&hps);
+
+  Usage usage(&el); el.adds(&usage);
 
   // COMM DEFINITION
   

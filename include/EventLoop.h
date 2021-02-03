@@ -114,6 +114,9 @@ class EventLoop {
      */
     void emit_packet(int id, vector<float> args);
   public:
+    uint32_t start_time;
+    uint32_t idle_time;
+    uint32_t run_time;
     /**
      * Register a subsystem.
      * 
