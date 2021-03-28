@@ -8,7 +8,13 @@ bool USBSerialComms::packet_available() {
 }
 
 string USBSerialComms::receive_raw_packet() {
-  return string(port->readStringUntil('\n').c_str());
+  char buffer[50];
+  int counter = 0;
+  while(port->available() > 0) {
+    buffer[counter] = port->read();
+    counter++;
+  }
+  return string(buffer);
 }
 
 // TODO: change this function to return false if fails? Maybe flush serial?
