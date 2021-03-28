@@ -7,11 +7,13 @@
 #include "sensors/MCP9600Sensor.h"
 #include "subsystems/Measurement.h"
 #include "subsystems/Valve.h"
+#include "subsystems/Heater.h"
 
 #include <Arduino.h>
 #include <i2c_device.h>
 
 int main(int argc, char**argv) {
+  Serial.begin(57600);
   EventLoop el;
 
   // /* PACKET DEFINITIONS */
@@ -19,15 +21,17 @@ int main(int argc, char**argv) {
     TC1 = 0,
     TC2 = 1,
     TC3 = 2,
-    TC4 = 3,
+    HEAT1 = 10,
+    HEAT2 = 11,
+    HEAT3 = 12,
   };
 
   Wire.begin();
 
   /* INTERFACE DEFINITIONS */
-  // GPIOutput gpio0(0);
-  // GPIOutput gpio1(1);
-  // GPIOutput gpio2(2);
+  GPIOutput gpio0(0);
+  GPIOutput gpio1(1);
+  GPIOutput gpio2(2);
   // GPIOutput gpio3(3);
   // GPIOutput gpio4(4);
   // GPIOutput gpio5(5);
@@ -44,9 +48,9 @@ int main(int argc, char**argv) {
   // ADS1219Sensor adc1(&i2c0, 0x48, &gpio28);
   // INA226Sensor pwr0(&i2c0, 0x40, &gpio23, 0.002, 4.0, true);
   MCP9600Sensor tc1(0x60, MCP9600_TYPE_K);
-  MCP9600Sensor tc2(0x67, MCP9600_TYPE_K);
-  MCP9600Sensor tc3(0x62, MCP9600_TYPE_K);
-  MCP9600Sensor tc4(0x64, MCP9600_TYPE_T);
+  // MCP9600Sensor tc2(0x67, MCP9600_TYPE_K);
+  MCP9600Sensor tc2(0x62, MCP9600_TYPE_K);
+  MCP9600Sensor tc3(0x64, MCP9600_TYPE_K);
 
   /* SUBSYSTEM DEFINITIONS */
   // Measurement lox_tank(el, adc0, 0, LOX_TANK); // event loop, device, channel, packet id
@@ -59,10 +63,13 @@ int main(int argc, char**argv) {
   // Measurement current(&pwr0, 1, CURRENT, 5); el.adds(&current);
   // Measurement wattage(&pwr0, 2, WATTAGE, 5); el.adds(&wattage);
   Measurement m_tc1(&tc1, 0, TC1, 5); el.adds(&m_tc1);
+  // Measurement m_tc2(&tc2, 0, TC2, 5); el.adds(&m_tc2);
   Measurement m_tc2(&tc2, 0, TC2, 5); el.adds(&m_tc2);
   Measurement m_tc3(&tc3, 0, TC3, 5); el.adds(&m_tc3);
-  Measurement m_tc4(&tc4, 0, TC4, 5); el.adds(&m_tc4);
 
+  Heater h1(&gpio0, 0, HEAT1); el.adds(&h1);
+  Heater h2(&gpio1, 0, HEAT2); el.adds(&h2);
+  Heater h3(&gpio2, 0, HEAT3); el.adds(&h3);
   // Valve lox_tway(&gpio0, 0, LOX_TWAY); el.adds(&lox_tway);
   // Valve prop_tway(&gpio1, 0, PROP_TWAY); el.adds(&prop_tway);
   // Valve lox_fway(&gpio2, 0, LOX_FWAY); el.adds(&lox_fway);
