@@ -8,6 +8,7 @@ Heater::Heater(DigitalInterface *di, uint8_t channel, int id)
 
 void Heater::handle_packet(int id, vector<float> args, EmitterFunc emit, SenderFunc send) {
   ontime = args[0] * 1000;
+  send(id, args);
 }
 
 void Heater::handle_event(string event, vector<float> args, EmitterFunc emit, SenderFunc send) {}

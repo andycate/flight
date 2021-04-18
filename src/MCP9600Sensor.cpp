@@ -13,5 +13,6 @@ MCP9600Sensor::MCP9600Sensor(uint8_t address, _themotype type)
 }
 
 float MCP9600Sensor::read(uint8_t channel) {
+  Serial.println("read");
   return board.readThermocouple();
 }
